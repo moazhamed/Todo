@@ -1,11 +1,14 @@
 package com.example.todo;
 
+import android.app.TimePickerDialog;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
+import android.widget.TimePicker;
 
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
@@ -13,24 +16,26 @@ import com.example.todo.DataBase.DOAs.TodoDao;
 import com.example.todo.DataBase.Model.Todo;
 import com.example.todo.DataBase.MyDataBase;
 
+import java.util.Calendar;
+
 public class AddTodoActivity extends BaseActivity implements View.OnClickListener {
 
     protected EditText title;
-    protected EditText date;
+    protected TextView date;
     protected EditText content;
     protected Button addButton;
-    static    Todo todo;
+    static Todo todo;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         super.setContentView(R.layout.activity_add_todo);
         initView();
-        if(todo!=null){
-           addButton.setText(R.string.update);
-           title.setText(todo.getTitle());
-           date.setText(todo.getDateTime());
-           content.setText(todo.getContent());
+        if (todo != null) {
+            addButton.setText(R.string.update);
+            title.setText(todo.getTitle());
+            date.setText(todo.getDateTime());
+            content.setText(todo.getContent());
         }
 
 
@@ -59,26 +64,25 @@ public class AddTodoActivity extends BaseActivity implements View.OnClickListene
                         }).setCancelable(false);
 
 
-            }
-       else{
-            String sTitle = title.getText().toString();
-            String sdate = date.getText().toString();
-            String scontent = content.getText().toString();
-            todo.setTitle(sTitle);
-            todo.setContent(scontent);
-            todo.setDateTime(sdate);
-            MyDataBase.getInstance(activity)
+            } else {
+                String sTitle = title.getText().toString();
+                String sdate = date.getText().toString();
+                String scontent = content.getText().toString();
+                todo.setTitle(sTitle);
+                todo.setContent(scontent);
+                todo.setDateTime(sdate);
+                MyDataBase.getInstance(activity)
                         .todoDao()
-                    .UpdateTodo(todo);
-            showConfirmationMessage(R.string.success, R.string.todo_updated_successfully,
-                    R.string.ok,
-                    new MaterialDialog.SingleButtonCallback() {
-                        @Override
-                        public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-                            dialog.dismiss();
-                            finish();
-                        }
-                    }).setCancelable(false);
+                        .UpdateTodo(todo);
+                showConfirmationMessage(R.string.success, R.string.todo_updated_successfully,
+                        R.string.ok,
+                        new MaterialDialog.SingleButtonCallback() {
+                            @Override
+                            public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                                dialog.dismiss();
+                                finish();
+                            }
+                        }).setCancelable(false);
 
             }
         }
@@ -86,15 +90,40 @@ public class AddTodoActivity extends BaseActivity implements View.OnClickListene
 
     @Override
     protected void onDestroy() {
-        todo=null;
+        todo = null;
         super.onDestroy();
     }
 
     private void initView() {
-        title =  findViewById(R.id.title);
-        date =  findViewById(R.id.date);
-        content =  findViewById(R.id.content);
-        addButton =  findViewById(R.id.add_button);
+        title = findViewById(R.id.title);
+        date = findViewById(R.id.date);
+        content = findViewById(R.id.content);
+        addButton = findViewById(R.id.add_button);
         addButton.setOnClickListener(AddTodoActivity.this);
+    }
+
+    int hourOfDay = -1;
+    int minutes = -1;
+
+    public void openDatePicker(View view) {
+
+
+        Calendar calendar = Calendar.getInstance();
+
+        TimePickerDialog timePickerDialog = new TimePickerDialog(activity,
+                new TimePickerDialog.OnTimeSetListener() {
+            @Override
+            public void onTimeSet(TimePicker view, int hour, int minute) {
+                hourOfDay = hour;
+                minutes = minute;
+                date.setText(hour + ": " + minute);
+
+            }
+        }, calendar.get(Calendar.HOUR_OF_DAY),
+                calendar.get(Calendar.MINUTE),
+                false);
+
+        timePickerDialog.show();
+
     }
 }
